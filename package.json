@@ -4,6 +4,7 @@
   "description": "Copy Explorer file/folder path as WSL path",
   "version": "0.0.1",
   "publisher": "local",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.90.0"
   },
