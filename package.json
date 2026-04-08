@@ -48,9 +48,12 @@
   },
   "scripts": {
     "compile": "tsc -p ./",
-    "test": "npm run compile && node --test out/*.test.js"
+    "test": "npm run compile && node --test out/*.test.js",
+    "prepackage": "npm run compile",
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
+    "@vscode/vsce": "^3.2.2",
     "@types/node": "^22.10.2",
     "@types/vscode": "^1.90.0",
     "typescript": "^5.7.2"

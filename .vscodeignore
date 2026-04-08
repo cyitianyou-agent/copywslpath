@@ -1,3 +1,8 @@
 src/**
 **/*.ts
 tsconfig.json
+docs/**
+.codex
+.gitignore
+out/*.test.js
+out/*.test.js.map
