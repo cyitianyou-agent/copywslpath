@@ -1,3 +1,5 @@
+import * as fs from 'node:fs';
+
 const drivePathReg = /^([A-Za-z]):\\(.*)$/;
 
 /**
@@ -22,4 +24,29 @@ export function toWslPath(winPath: string): string {
   const driveVal = matchVal[1].toLowerCase();
   const tailVal = matchVal[2].replace(/\\/g, '/');
   return `/mnt/${driveVal}/${tailVal}`;
+}
+
+/**
+ * 解析 Windows 路径对应的真实路径（跟随软链接/重解析点）。
+ *
+ * 设计意图：
+ * 1. 让“复制真实 WSL 路径”命令在多仓库软链接场景中拿到目标物理路径。
+ * 2. 失败时明确抛错，不做回退，避免复制到非预期路径。
+ *
+ * 边界约束：
+ * - 当解析失败时，统一转换为可读错误文案，交给上层直接提示用户。
+ * - 默认使用 `fs.realpathSync.native`，并允许注入实现以便测试。
+ */
+export function resolveRealPath(
+  winPath: string,
+  readPath: (pathVal: string) => string = fs.realpathSync.native
+): string {
+  const pathVal = winPath.trim();
+
+  try {
+    return readPath(pathVal);
+  } catch (error) {
+    const msgVal = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to resolve real path: ${msgVal}`);
+  }
 }

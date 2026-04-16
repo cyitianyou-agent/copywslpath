@@ -2,9 +2,17 @@
   "name": "copy-wsl-path",
   "displayName": "Copy WSL Path",
   "description": "Copy Explorer file/folder path as WSL path",
-  "version": "0.0.1",
-  "publisher": "local",
+  "version": "0.0.2",
+  "publisher": "cyitianyou",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cyitianyou-agent/copywslpath.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cyitianyou-agent/copywslpath/issues"
+  },
+  "homepage": "https://github.com/cyitianyou-agent/copywslpath#readme",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -13,13 +21,18 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
-    "onCommand:copyWslPath.copyFromExplorer"
+    "onCommand:copyWslPath.copyFromExplorer",
+    "onCommand:copyWslPath.copyRealFromExplorer"
   ],
   "contributes": {
     "commands": [
       {
         "command": "copyWslPath.copyFromExplorer",
         "title": "Copy WSL Path"
+      },
+      {
+        "command": "copyWslPath.copyRealFromExplorer",
+        "title": "Copy Real WSL Path"
       }
     ],
     "menus": {
@@ -32,6 +45,16 @@
         {
           "command": "copyWslPath.copyFromExplorer",
           "group": "navigation@50",
+          "when": "!explorerResourceIsFolder"
+        },
+        {
+          "command": "copyWslPath.copyRealFromExplorer",
+          "group": "navigation@51",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "copyWslPath.copyRealFromExplorer",
+          "group": "navigation@51",
           "when": "!explorerResourceIsFolder"
         }
       ]

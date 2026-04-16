@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 
-import { toWslPath } from './pathConverter';
+import { resolveRealPath, toWslPath } from './pathConverter';
 
 const cmdKey = 'copyWslPath.copyFromExplorer';
+const cmdRealKey = 'copyWslPath.copyRealFromExplorer';
 const showKey = 'copyWslPath.showNotification';
 const noResMsg = 'No resource selected from Explorer context.';
 
@@ -34,6 +35,26 @@ function pickPath(resource: vscode.Uri | undefined): string {
 }
 
 /**
+ * 执行“复制 WSL 路径”主流程。
+ *
+ * 关键约束：
+ * - `needReal` 为 true 时必须先解析真实路径，失败直接抛错，不回退。
+ * - 复制成功后通知文案按命令语义区分，避免用户误判来源路径。
+ */
+async function copyPath(resource: vscode.Uri | undefined, needReal: boolean): Promise<void> {
+  const rawVal = pickPath(resource);
+  const pathVal = needReal ? resolveRealPath(rawVal) : rawVal;
+  const wslVal = toWslPath(pathVal);
+
+  await vscode.env.clipboard.writeText(wslVal);
+
+  if (readShow()) {
+    const tagVal = needReal ? 'Real WSL Path Copied' : 'WSL Path Copied';
+    await vscode.window.showInformationMessage(`${tagVal}: ${wslVal}`);
+  }
+}
+
+/**
  * 扩展激活入口。
  *
  * 关键步骤：
@@ -46,21 +67,23 @@ function pickPath(resource: vscode.Uri | undefined): string {
 export function activate(context: vscode.ExtensionContext): void {
   const cmdVal = vscode.commands.registerCommand(cmdKey, async (resource: vscode.Uri | undefined) => {
     try {
-      const pathVal = pickPath(resource);
-      const wslVal = toWslPath(pathVal);
-
-      await vscode.env.clipboard.writeText(wslVal);
-
-      if (readShow()) {
-        await vscode.window.showInformationMessage(`WSL Path Copied: ${wslVal}`);
-      }
+      await copyPath(resource, false);
     } catch (error) {
       const messageVal = error instanceof Error ? error.message : String(error);
       await vscode.window.showErrorMessage(messageVal);
     }
   });
 
-  context.subscriptions.push(cmdVal);
+  const cmdRealVal = vscode.commands.registerCommand(cmdRealKey, async (resource: vscode.Uri | undefined) => {
+    try {
+      await copyPath(resource, true);
+    } catch (error) {
+      const messageVal = error instanceof Error ? error.message : String(error);
+      await vscode.window.showErrorMessage(messageVal);
+    }
+  });
+
+  context.subscriptions.push(cmdVal, cmdRealVal);
 }
 
 export function deactivate(): void {
