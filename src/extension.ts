@@ -4,6 +4,8 @@ import { resolveRealPath, toWslPath } from './pathConverter';
 
 const cmdKey = 'copyWslPath.copyFromExplorer';
 const cmdRealKey = 'copyWslPath.copyRealFromExplorer';
+const cmdRawKey = 'copyWslPath.copyRawFromExplorer';
+const cmdRealRawKey = 'copyWslPath.copyRealRawFromExplorer';
 const showKey = 'copyWslPath.showNotification';
 const noResMsg = 'No resource selected from Explorer context.';
 
@@ -55,6 +57,25 @@ async function copyPath(resource: vscode.Uri | undefined, needReal: boolean): Pr
 }
 
 /**
+ * 执行“复制原始系统路径”主流程。
+ *
+ * 关键约束：
+ * - `needReal` 为 true 时先做真实路径解析，再写入剪贴板。
+ * - 该流程不做 WSL 路径转换，直接保留当前操作系统原始路径格式。
+ */
+async function copyRawPath(resource: vscode.Uri | undefined, needReal: boolean): Promise<void> {
+  const rawVal = pickPath(resource);
+  const pathVal = needReal ? resolveRealPath(rawVal) : rawVal;
+
+  await vscode.env.clipboard.writeText(pathVal);
+
+  if (readShow()) {
+    const tagVal = needReal ? 'Real Path Copied' : 'Path Copied';
+    await vscode.window.showInformationMessage(`${tagVal}: ${pathVal}`);
+  }
+}
+
+/**
  * 扩展激活入口。
  *
  * 关键步骤：
@@ -65,6 +86,24 @@ async function copyPath(resource: vscode.Uri | undefined, needReal: boolean): Pr
  * 5. 任何异常均展示错误提示，保证用户可见。
  */
 export function activate(context: vscode.ExtensionContext): void {
+  const cmdRawVal = vscode.commands.registerCommand(cmdRawKey, async (resource: vscode.Uri | undefined) => {
+    try {
+      await copyRawPath(resource, false);
+    } catch (error) {
+      const messageVal = error instanceof Error ? error.message : String(error);
+      await vscode.window.showErrorMessage(messageVal);
+    }
+  });
+
+  const cmdRealRawVal = vscode.commands.registerCommand(cmdRealRawKey, async (resource: vscode.Uri | undefined) => {
+    try {
+      await copyRawPath(resource, true);
+    } catch (error) {
+      const messageVal = error instanceof Error ? error.message : String(error);
+      await vscode.window.showErrorMessage(messageVal);
+    }
+  });
+
   const cmdVal = vscode.commands.registerCommand(cmdKey, async (resource: vscode.Uri | undefined) => {
     try {
       await copyPath(resource, false);
@@ -83,7 +122,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }
   });
 
-  context.subscriptions.push(cmdVal, cmdRealVal);
+  context.subscriptions.push(cmdRawVal, cmdRealRawVal, cmdVal, cmdRealVal);
 }
 
 export function deactivate(): void {

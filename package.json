@@ -2,7 +2,7 @@
   "name": "copy-wsl-path",
   "displayName": "Copy WSL Path",
   "description": "Copy Explorer file/folder path as WSL path",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "cyitianyou",
   "license": "MIT",
   "repository": {
@@ -21,11 +21,21 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
+    "onCommand:copyWslPath.copyRawFromExplorer",
+    "onCommand:copyWslPath.copyRealRawFromExplorer",
     "onCommand:copyWslPath.copyFromExplorer",
     "onCommand:copyWslPath.copyRealFromExplorer"
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "copyWslPath.copyRawFromExplorer",
+        "title": "Copy Path"
+      },
+      {
+        "command": "copyWslPath.copyRealRawFromExplorer",
+        "title": "Copy Real Path"
+      },
       {
         "command": "copyWslPath.copyFromExplorer",
         "title": "Copy WSL Path"
@@ -38,24 +48,44 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "copyWslPath.copyFromExplorer",
-          "group": "navigation@50",
-          "when": "explorerResourceIsFolder"
+          "command": "copyWslPath.copyRawFromExplorer",
+          "group": "navigation@48",
+          "when": "explorerResourceIsFolder && config.copyWslPath.showCopyPathMenu"
+        },
+        {
+          "command": "copyWslPath.copyRawFromExplorer",
+          "group": "navigation@48",
+          "when": "!explorerResourceIsFolder && config.copyWslPath.showCopyPathMenu"
+        },
+        {
+          "command": "copyWslPath.copyRealRawFromExplorer",
+          "group": "navigation@49",
+          "when": "explorerResourceIsFolder && config.copyWslPath.showCopyRealPathMenu"
+        },
+        {
+          "command": "copyWslPath.copyRealRawFromExplorer",
+          "group": "navigation@49",
+          "when": "!explorerResourceIsFolder && config.copyWslPath.showCopyRealPathMenu"
         },
         {
           "command": "copyWslPath.copyFromExplorer",
           "group": "navigation@50",
-          "when": "!explorerResourceIsFolder"
+          "when": "explorerResourceIsFolder && config.copyWslPath.showCopyWslPathMenu"
+        },
+        {
+          "command": "copyWslPath.copyFromExplorer",
+          "group": "navigation@50",
+          "when": "!explorerResourceIsFolder && config.copyWslPath.showCopyWslPathMenu"
         },
         {
           "command": "copyWslPath.copyRealFromExplorer",
           "group": "navigation@51",
-          "when": "explorerResourceIsFolder"
+          "when": "explorerResourceIsFolder && config.copyWslPath.showCopyRealWslPathMenu"
         },
         {
           "command": "copyWslPath.copyRealFromExplorer",
           "group": "navigation@51",
-          "when": "!explorerResourceIsFolder"
+          "when": "!explorerResourceIsFolder && config.copyWslPath.showCopyRealWslPathMenu"
         }
       ]
     },
@@ -66,6 +96,26 @@
           "type": "boolean",
           "default": true,
           "description": "Show notification with full copied WSL path after success."
+        },
+        "copyWslPath.showCopyPathMenu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Copy Path menu item in Explorer context menu."
+        },
+        "copyWslPath.showCopyRealPathMenu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Copy Real Path menu item in Explorer context menu."
+        },
+        "copyWslPath.showCopyWslPathMenu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Copy WSL Path menu item in Explorer context menu."
+        },
+        "copyWslPath.showCopyRealWslPathMenu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Copy Real WSL Path menu item in Explorer context menu."
         }
       }
     }

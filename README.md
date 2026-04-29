@@ -4,6 +4,14 @@
 
 ## 功能说明
 
+- `Copy Path`  
+  直接复制当前资源在当前操作系统中的原始路径，不做任何路径格式转换。  
+  示例：`E:\MyWorks\demo`
+
+- `Copy Real Path`  
+  先解析软链接/重解析点对应的真实物理路径，再复制原始路径，不做 WSL 转换。  
+  适合需要定位真实磁盘位置的场景。若真实路径解析失败，会直接报错，不回退到原始路径。
+
 - `Copy WSL Path`  
   将当前资源路径直接转换为 WSL 路径并复制到剪贴板。  
   示例：`E:\MyWorks\demo` -> `/mnt/e/MyWorks/demo`
@@ -22,11 +30,23 @@
 - `copyWslPath.showNotification`（默认：`true`）  
   控制复制成功后是否弹出通知。
 
+- `copyWslPath.showCopyPathMenu`（默认：`true`）  
+  控制是否显示 `Copy Path` 菜单。
+
+- `copyWslPath.showCopyRealPathMenu`（默认：`true`）  
+  控制是否显示 `Copy Real Path` 菜单。
+
+- `copyWslPath.showCopyWslPathMenu`（默认：`true`）  
+  控制是否显示 `Copy WSL Path` 菜单。
+
+- `copyWslPath.showCopyRealWslPathMenu`（默认：`true`）  
+  控制是否显示 `Copy Real WSL Path` 菜单。
+
 ## 本地调试
 
 1. 在扩展项目中按 `F5` 启动 Extension Development Host。
 2. 在新窗口的 Explorer 中右键文件或文件夹。
-3. 选择 `Copy WSL Path` 或 `Copy Real WSL Path`。
+3. 选择 `Copy Path`、`Copy Real Path`、`Copy WSL Path` 或 `Copy Real WSL Path`。
 4. 粘贴剪贴板并检查是否为 `/mnt/<drive>/...` 格式。
 
 ## 打包
