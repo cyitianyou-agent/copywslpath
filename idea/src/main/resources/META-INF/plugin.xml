@@ -1,0 +1,49 @@
+<idea-plugin>
+    <id>com.cyitianyou.copywslpath</id>
+    <name>Copy WSL Path</name>
+    <vendor>cyitianyou</vendor>
+    <description><![CDATA[
+        Copy Windows and WSL paths from the IntelliJ IDEA Project View.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Copy WSL Path" displayType="BALLOON" />
+        <applicationConfigurable
+            parentId="tools"
+            instance="com.cyitianyou.copywslpath.CopyWslPathConfigurable" />
+    </extensions>
+
+    <actions>
+        <group
+            id="com.cyitianyou.copywslpath.copyPathGroup"
+            class="com.cyitianyou.copywslpath.CopyPathGroup"
+            text="Copy Path As"
+            description="Copy the selected resource as a Windows or WSL path"
+            icon="AllIcons.Actions.Copy"
+            popup="true">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last" />
+            <action
+                id="com.cyitianyou.copywslpath.copyPath"
+                class="com.cyitianyou.copywslpath.CopyPathAction"
+                text="Copy Path"
+                description="Copy the selected resource's raw Windows path" />
+            <action
+                id="com.cyitianyou.copywslpath.copyRealPath"
+                class="com.cyitianyou.copywslpath.CopyRealPathAction"
+                text="Copy Real Path"
+                description="Copy the selected resource's resolved Windows path" />
+            <action
+                id="com.cyitianyou.copywslpath.copyWslPath"
+                class="com.cyitianyou.copywslpath.CopyWslPathAction"
+                text="Copy WSL Path"
+                description="Copy the selected resource as a WSL path" />
+            <action
+                id="com.cyitianyou.copywslpath.copyRealWslPath"
+                class="com.cyitianyou.copywslpath.CopyRealWslPathAction"
+                text="Copy Real WSL Path"
+                description="Copy the selected resource's resolved path as a WSL path" />
+        </group>
+    </actions>
+</idea-plugin>
