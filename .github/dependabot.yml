@@ -18,3 +18,12 @@ updates:
     labels:
       - dependencies
       - kotlin
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - github-actions

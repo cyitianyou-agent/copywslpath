@@ -1,0 +1,78 @@
+name: Dependabot auto-merge
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'cyitianyou-agent/copywslpath'
+    runs-on: ubuntu-latest
+
+    steps:
+      # This workflow intentionally does not check out or execute pull request
+      # code. It only reads Dependabot metadata and uses the repository token
+      # to enable auto-merge after the trusted CI workflow succeeds.
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for npm and IDEA checks
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          get_check_state() {
+            local check_name="$1"
+            gh api "repos/${REPOSITORY}/commits/${HEAD_SHA}/check-runs" \
+              --header 'Accept: application/vnd.github+json' \
+              --arg check_name "${check_name}" \
+              --jq '[.check_runs[] | select(.name == $check_name)] | sort_by(.id) | if length == 0 then "missing" else .[-1].status + ":" + (.[-1].conclusion // "") end'
+          }
+
+          for attempt in $(seq 1 60); do
+            npm_state="$(get_check_state npm)"
+            idea_state="$(get_check_state idea)"
+
+            echo "Attempt ${attempt}: npm=${npm_state}, idea=${idea_state}"
+
+            if [[ "${npm_state}" == "completed:success" && "${idea_state}" == "completed:success" ]]; then
+              exit 0
+            fi
+
+            if [[ "${npm_state}" == completed:* && "${npm_state}" != "completed:success" ]]; then
+              echo "npm CI did not succeed."
+              exit 1
+            fi
+
+            if [[ "${idea_state}" == completed:* && "${idea_state}" != "completed:success" ]]; then
+              echo "IDEA CI did not succeed."
+              exit 1
+            fi
+
+            sleep 30
+          done
+
+          echo "Timed out waiting for npm and IDEA CI checks."
+          exit 1
+
+      - name: Enable squash auto-merge
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "${PR_URL}"
